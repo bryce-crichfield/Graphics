@@ -2,6 +2,7 @@
 #include "Window.h"
 #include <glfw/glfw3.h>
 #include <iostream>
+#include "Animation.h"
 
 #include "Shader.h"
 
@@ -58,18 +59,54 @@ int main(void) {
 
     auto quad = Geometry::buildQuad(positionAttribute, uvAttribute, normalAttribute);
 
-    Matrix4 transform = Matrix4::identity();
-    transform = transform * Matrix4::translate(-0.5f, 0.5f, 0.0f);
-    transform = transform * Matrix4::scale(0.5f, 0.5f, 1.0f);
-
     auto texture = DeviceTexture();
     texture.load("../test.png");
+
+
+    Animation animation;
+    {
+        auto start = Transform();
+        start.translation = Vector3(0.0f, 0.0f, 0.0f);
+        start.scale = Vector3(0.5f, 0.5f, 1.0f);
+
+        auto end = Transform();
+        end.translation = Vector3(0.5f, 0.5f, 0.0f);
+        end.scale = Vector3(1.0f, 1.0f, 1.0f);
+
+        auto frame = AnimationFrame(start, end, Easing::linear);
+
+        animation.add(frame, Seconds(1.0f));
+    }
+
+    {
+        auto start = Transform();
+        start.translation = Vector3(0.5f, 0.5f, 0.0f);
+        start.scale = Vector3(1.0f, 1.0f, 1.0f);
+
+        auto end = Transform();
+        end.translation = Vector3(0.0f, 0.0f, 0.0f);
+        end.scale = Vector3(0.5f, 0.5f, 1.0f);
+
+        auto frame = AnimationFrame(start, end, Easing::linear);
+
+        animation.add(frame, Seconds(1.0f));
+    }
+
+    float lastTime = 0.0f;
 
     while (window->isOpen()) {
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        quad->draw(*program, transform, texture);
+        float currentTime = glfwGetTime();
+        float deltaTime = currentTime - lastTime;
+        lastTime = currentTime;
+
+        animation.update(Seconds(deltaTime));
+
+        auto transform = animation.getTransform();
+        quad->draw(*program, transform.toMatrix(), texture);
+
 
         window->update();
     }

@@ -155,6 +155,8 @@ struct Vector4 {
 
     Vector4(float x, float y, float z, float w) : x(x), y(y), z(z), w(w) {}
 
+    Vector4(const Vector3& other, float w) : x(other.x), y(other.y), z(other.z), w(w) {}
+
     Vector4(const Vector4& other) : x(other.x), y(other.y), z(other.z), w(other.w) {}
 
     Vector4& operator=(const Vector4& other) {
